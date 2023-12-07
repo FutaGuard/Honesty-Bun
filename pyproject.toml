@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "honesty bun"
+version = "0.1.0"
+description = ""
+authors = ["tdc <tdc@tdccc.com.tw>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+dnspython = "^2.4.2"
+httpx = "^0.25.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
