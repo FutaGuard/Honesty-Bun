@@ -51,7 +51,7 @@ class Bun:
         r: dns.message.Message = await dns.asyncquery.udp(q, self.cht_ip)
         if r.answer:
             ip = r.answer[0].to_text().split(' ')[-1]
-            if ip == '34.102.218.71':
+            if ip in ['34.102.218.71', '150.242.101.120']:
                 logger.info(f'[Redirect] {domain}')
             else:
                 logger.error(f'[NotRedirect] {domain}')
