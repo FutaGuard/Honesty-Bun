@@ -88,6 +88,7 @@ async def main():
     while bun.timedout and retries > 0:
         logger.info(f'Retrying ... {retries}')
         retrylist: List[List[str]] = split_list(bun.timedout)
+        bun.timedout = []
         for domain in retrylist:
             tasking = [bun.lookup(e) for e in domain]
             await asyncio.gather(*tasking)
