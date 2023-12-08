@@ -57,7 +57,7 @@ class Bun:
                 logger.error(f'[NotRedirect] {domain}')
                 self.check.write(f'[NotRedirect] {domain}')
         else:
-            self.check.write(f'[failed resolv] {domain}')
+            self.check.write(f'[FailedResolve] {domain}')
             logger.error(f'[FailedResolve] {domain}')
 
 
@@ -71,11 +71,5 @@ async def main():
         await asyncio.gather(*tasking)
 
 
-
 if __name__ == '__main__':
-    logger.info('早安')
-    print('早安')
     asyncio.run(main())
-    # todo!
-    # - [ ] read list and chunks
-    # - [ ] run with gather in task
