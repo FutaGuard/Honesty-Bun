@@ -10,6 +10,11 @@ import pathlib
 logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(message)s')
 logger = logging.getLogger(__name__)
 
+REDIRECT = {
+    '165': '34.102.218.71',
+    'TWNIC': '150.242.101.120'
+}
+
 
 def split_list(list_input) -> List[List[str]]:
     output_list = []
@@ -51,7 +56,9 @@ class Bun:
         r: dns.message.Message = await dns.asyncquery.udp(q, self.cht_ip)
         if r.answer:
             ip = r.answer[0].to_text().split(' ')[-1]
-            if ip in ['34.102.218.71', '150.242.101.120']:
+            if ip in REDIRECT.values():
+                #    165
+                # 150.242.101.120 TWNIC
                 logger.info(f'[Redirect] {domain}')
             else:
                 logger.error(f'[NotRedirect] {domain}')
