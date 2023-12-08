@@ -41,6 +41,8 @@ class Bun:
         self.filter_url = 'https://filter.futa.gg/TW165-domains.txt'
         self.cht_ip = cht_ip
         self.check = Checker()
+        self.timedout: List[str] = []
+        # self.bad: List[str] = []
 
     async def get_filter_list(self) -> List[str]:
         async with httpx.AsyncClient() as client:
@@ -53,19 +55,24 @@ class Bun:
 
     async def lookup(self, domain: str):
         q = dns.message.make_query(domain, 'A')
-        r: dns.message.Message = await dns.asyncquery.udp(q, self.cht_ip)
-        if r.answer:
-            ip = r.answer[0].to_text().split(' ')[-1]
-            if ip in REDIRECT.values():
-                #    165
-                # 150.242.101.120 TWNIC
-                logger.info(f'[Redirect] {domain}')
-            else:
-                logger.error(f'[NotRedirect] {domain}')
-                self.check.write(f'[NotRedirect] {domain}')
+        try:
+            r: dns.message.Message = await dns.asyncquery.udp(q, self.cht_ip, timeout=5)
+        except dns.exception.Timeout:
+            self.timedout.append(domain)
+        except dns.query.BadResponse:
+            # self.bad.append(domain)
+            logger.error(f'[BadResponse] {domain}')
         else:
-            self.check.write(f'[FailedResolve] {domain}')
-            logger.error(f'[FailedResolve] {domain}')
+            if r.answer:
+                ip = r.answer[0].to_text().split(' ')[-1]
+                if ip in REDIRECT.values():
+                    logger.info(f'[Redirect] {domain}')
+                else:
+                    logger.error(f'[NotRedirect] {domain}')
+                    self.check.write(f'[NotRedirect] {domain}')
+            else:
+                self.check.write(f'[FailedResolve] {domain}')
+                logger.error(f'[FailedResolve] {domain}')
 
 
 async def main():
@@ -76,6 +83,15 @@ async def main():
     for bunch in filterlist:
         tasking = [bun.lookup(e) for e in bunch]
         await asyncio.gather(*tasking)
+
+    retries = 3
+    while bun.timedout and retries > 0:
+        logger.info(f'Retrying ... {retries}')
+        retrylist: List[List[str]] = split_list(bun.timedout)
+        for domain in retrylist:
+            tasking = [bun.lookup(e) for e in domain]
+            await asyncio.gather(*tasking)
+        retries -= 1
 
 
 if __name__ == '__main__':
